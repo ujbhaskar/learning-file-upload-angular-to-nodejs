@@ -1,0 +1,45 @@
+<!--<div style="text-align:center">
+  <input id="photo" type="file" />
+  <br/>
+  <button type="button" class="btn btn-success btn-s" (click)="upload()">
+  Upload
+  </button>
+</div>-->
+
+
+<div class="container">
+  <h1>Upload section</h1>
+  <div class="row">
+    <div class="col-12">
+      <input name="fileUpload" id="fileUpload" type="file" 
+        multiple ng2FileSelect [uploader]="uploader"/>
+      <br/>
+    </div>
+    <div *ngFor="let item of uploader.queue" class="row col-12">
+      <div class="col-sm-4">{{item.file.name}}</div>
+      <div class="col-sm-4">
+        <div class="progress">
+          <div class="progress-bar" 
+           [ngStyle]="{'width':item.progress+'%'}" >
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <button type="button" class="btn btn-primary" (click)="item.upload()">Upload</button>
+        <button type="button" class="btn btn-danger" (click)="item.remove()">Cancel</button>  
+      </div>
+    </div>
+    <div class="col-12" *ngIf="uploader?.queue?.length > 0">
+      <button type="button" class="btn btn-primary" (click)="uploader.uploadAll()" >Upload All</button>
+    </div>
+  </div>
+  <hr/>
+  <h1>Download Section</h1>
+  <div class="row" *ngFor="let item of attachmentList; let i = index" >
+    <div class="col-sm-6">{{item.originalname}}</div>
+    <div class="col-sm-6">
+      <button type="button" class="btn btn-success" 
+        (click)="download(i)">Download</button>
+    </div>
+  </div>
+</div>
