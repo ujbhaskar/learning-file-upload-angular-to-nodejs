@@ -5,6 +5,7 @@ import "rxjs/add/operator/do";
 import "rxjs/add/operator/map";
 import { FileService } from "./file.service";
 import { saveAs } from 'file-saver';
+import {DomSanitizer} from '@angular/platform-browser';
 
 const URL = 'http://localhost:3000/upload';
 
@@ -17,10 +18,11 @@ const URL = 'http://localhost:3000/upload';
 export class AppComponent implements OnInit {
   uploader:FileUploader = new FileUploader({url:URL});
   attachmentList:any = [];
-
+  imgSrc: any = '';
   ngOnInit() {
   }
-  constructor(private http: Http, private el: ElementRef, private fileService:FileService) {
+  constructor(private http: Http, private el: ElementRef,
+   private fileService:FileService,private sanitizer:DomSanitizer) {
     this.uploader.onAfterAddingFile = (file)=> { file.withCredentials = false; };
     this.uploader.onCompleteItem = (item:any, res:any, status:any, headers:any)=>{
       this.attachmentList.push(JSON.parse(res));
@@ -49,16 +51,37 @@ export class AppComponent implements OnInit {
       }
   }
 
+  imageToShow: any;
+
+  createImageFromBlob(image: Blob) {
+      let reader = new FileReader();
+      reader.addEventListener("load", () => {
+          this.imageToShow = reader.result;
+      }, false);
+
+      if (image) {
+          reader.readAsDataURL(image);
+      }
+  }
   download(index){
-    var filename = this.attachmentList[index].uploadname;
-    this.fileService.downloadFile(filename).subscribe(
+    var self = this;
+    var filename = self.attachmentList[index].uploadname;
+    self.fileService.downloadFile(filename).subscribe(
       data=>{
         console.log(data);
-        saveAs(data, filename);
+         self.createImageFromBlob(data);
       },
       error=>{
         console.error(error);
       }
     )
+  }
+  getUrl(){
+    if(this.imgSrc){
+      return this.imgSrc.changingThisBreaksApplicationSecurity;
+    }
+    else{
+      return '';
+    }
   }
 }
