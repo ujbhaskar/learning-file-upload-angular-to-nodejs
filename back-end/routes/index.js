@@ -25,7 +25,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/upload', function (req, res, next) {
-  console.log("'''''''reached in post upload method''''''");
+  console.log("'''''''reached in post upload method'''''': " , req.body);
   upload(req,res,(err)=>{
     if(err){
       return res.status(501).json({

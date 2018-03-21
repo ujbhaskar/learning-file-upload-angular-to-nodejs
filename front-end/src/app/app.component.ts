@@ -7,7 +7,7 @@ import { FileService } from "./file.service";
 import { saveAs } from 'file-saver';
 import {DomSanitizer} from '@angular/platform-browser';
 
-const URL = 'http://localhost:3000/upload';
+const URL = 'http://localhost:3000/file/upload';
 
 @Component({
     selector: 'app-root',
@@ -20,12 +20,14 @@ export class AppComponent implements OnInit {
   attachmentList:any = [];
   imgSrc: any = '';
   ngOnInit() {
+    this.getAllFiles();
   }
   constructor(private http: Http, private el: ElementRef,
    private fileService:FileService,private sanitizer:DomSanitizer) {
     this.uploader.onAfterAddingFile = (file)=> { file.withCredentials = false; };
     this.uploader.onCompleteItem = (item:any, res:any, status:any, headers:any)=>{
       this.attachmentList.push(JSON.parse(res));
+      
     }
   }
   upload() {
@@ -63,6 +65,18 @@ export class AppComponent implements OnInit {
           reader.readAsDataURL(image);
       }
   }
+
+  getAllFiles(){
+    this.fileService.getFiles().subscribe(
+      data=>{
+        console.log(data);
+      },
+      error=>{
+        console.error(error);
+      }
+    )
+  }
+
   download(index){
     var self = this;
     var filename = self.attachmentList[index].uploadname;
@@ -75,13 +89,5 @@ export class AppComponent implements OnInit {
         console.error(error);
       }
     )
-  }
-  getUrl(){
-    if(this.imgSrc){
-      return this.imgSrc.changingThisBreaksApplicationSecurity;
-    }
-    else{
-      return '';
-    }
   }
 }
