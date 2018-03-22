@@ -26,7 +26,9 @@ const storage = new GridFsStorage({
         if (err) {
           return reject(err);
         }
-        const filename = buf.toString('hex') + path.extname(file.originalname);
+        console.log('buf : ' , buf.toString('hex'));
+        console.log('path.extname(file.originalname) : ' , path.extname(file.originalname));
+        const filename = buf.toString('hex') + '||' + file.originalname;// + '||' +  + path.extname(file.originalname);
         const fileInfo = {
           filename: filename,
           bucketName: 'uploads'
@@ -56,7 +58,9 @@ router.get('/files', (req,res,next)=>{
                 err: 'No files exist'
             });
         }
-        return res.json(files);
+        return res.status(200).json({
+            files:files
+        });
     });
 });
 
@@ -91,6 +95,47 @@ router.get('/image/:filename', (req,res,next)=>{
                 err:'Not an image!!'
             })
         }
+    });
+
+});
+
+router.post('/download',(req,res,next)=>{
+    console.log('in download where filename is : ' , req.body.filename);
+     gfs.files.findOne({filename: req.body.filename},(err,file)=>{
+        if(!file || file.length === 0){
+            return res.status(404).json({
+                err: 'No file exists'
+            });
+        }
+        // return res.json(file);
+        //Check if image
+        if(file.contentType === 'image/png' || file.contentType === 'image/jpeg'){
+            //Read output to browser
+            const readStream = gfs.createReadStream(file.filename);
+            readStream.pipe(res);            
+        }
+        else{
+            res.status(404).json({
+                err:'Not an image!!'
+            })
+        }
+    });
+});
+// router.get('/download',(req,res,next)=>{  
+//     filepath = path.join(__dirname,"../uploads")+'/'+'1521533431962-mail.png';
+//     res.sendFile(filepath);
+// });
+
+router.delete('/delete/:filename',(req,res)=>{
+    gfs.remove({filename:req.params.filename,root:'uploads'},(err,gridStore)=>{
+        if(err){
+            return res.status(404).json({
+                err:err
+            });            
+        }
+        res.status(200).json({
+            message: 'Deleted successfully'
+        });
     });
 });
 

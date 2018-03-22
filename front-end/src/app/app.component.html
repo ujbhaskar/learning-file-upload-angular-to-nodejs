@@ -35,14 +35,21 @@
   </div>
   <hr/>
   <h1>Download Section</h1>
-  <div class="row" *ngFor="let item of attachmentList; let i = index" >
-    <div class="col-sm-6">{{item.originalname}}</div>
+  <hr/>
+  <div class="row mb-3" *ngFor="let file of filesArray; let i = index" >
+    <div class="col-sm-6">
+      {{file.filename.split('||')[1]}}
+      <img src="http://localhost:3000/file/image/{{file.filename}}" />
+    </div>
     <div class="col-sm-6">
       <button type="button" class="btn btn-success" 
-        (click)="download(i)">Download</button>
+        (click)="download(file)">Download</button>
+      <button type="button" class="btn btn-danger" 
+        (click)="delete(file)">Delete</button>
     </div>
   </div>
+  <hr/>
   <!--<img id="photo" makesafe src="{{getUrl()}}"/>-->
-  <img [src]="imageToShow" />
-  <div >imageToShow = {{imageToShow}}</div>
+  <!--<img [src]="imageToShow" />
+  <div >imageToShow = {{imageToShow}}</div>-->
 </div>

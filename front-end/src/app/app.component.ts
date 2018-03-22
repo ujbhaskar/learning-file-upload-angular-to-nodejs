@@ -19,34 +19,42 @@ export class AppComponent implements OnInit {
   uploader:FileUploader = new FileUploader({url:URL});
   attachmentList:any = [];
   imgSrc: any = '';
+  filesArray: any = [];
   ngOnInit() {
     this.getAllFiles();
   }
-  constructor(private http: Http, private el: ElementRef,
-   private fileService:FileService,private sanitizer:DomSanitizer) {
+  constructor(
+    private http: Http, 
+    private el: ElementRef,
+    private fileService:FileService, 
+    private sanitizer:DomSanitizer
+  ) {
     this.uploader.onAfterAddingFile = (file)=> { file.withCredentials = false; };
     this.uploader.onCompleteItem = (item:any, res:any, status:any, headers:any)=>{
       this.attachmentList.push(JSON.parse(res));
-      
+      console.log('over here');
+      this.getAllFiles();
     }
   }
   upload() {
+    console.log('in upload');
       let inputEl: HTMLInputElement = this.el.nativeElement.querySelector('#photo');
       let fileCount: number = inputEl.files.length;
       console.log('inputEl : ' , inputEl.files);
       let formData = new FormData();
       if (fileCount > 0) {
         formData.append('photo', inputEl.files.item(0));
-        console.log('formData : ' , formData);
-        this.http.post(URL, formData).map((res:Response) => res.json()).subscribe(
-          (success) => {
-            console.log('success!!!');
-            alert(success);
+
+        this.fileService.uploadFile(formData).subscribe(
+          data => {
+            console.log('data!!!');
+            alert(data);
           },
-          (error) =>{
+          error =>{
             console.log('error: ' , error);
              alert(error)
-        })
+          }
+        );
       }
       else{
         console.log('no files selected');
@@ -58,6 +66,7 @@ export class AppComponent implements OnInit {
   createImageFromBlob(image: Blob) {
       let reader = new FileReader();
       reader.addEventListener("load", () => {
+        console.log('reader: ' , reader);
           this.imageToShow = reader.result;
       }, false);
 
@@ -67,23 +76,41 @@ export class AppComponent implements OnInit {
   }
 
   getAllFiles(){
+    let self = this;
     this.fileService.getFiles().subscribe(
       data=>{
         console.log(data);
+        self.filesArray = data.files;
+      },
+      error=>{
+        console.error(error);
+        self.filesArray = [];
+      }
+    )
+  }
+  delete(file){
+    console.log('file: ' , file);
+    var self = this;
+    var filename = file.filename;
+    self.fileService.deleteFile(filename).subscribe(
+      data=>{
+        console.log(data);
+        self.getAllFiles();
       },
       error=>{
         console.error(error);
       }
     )
   }
-
-  download(index){
+  download(file){
+    console.log('file: ' , file);
     var self = this;
-    var filename = self.attachmentList[index].uploadname;
+    var filename = file.filename;
     self.fileService.downloadFile(filename).subscribe(
       data=>{
         console.log(data);
-         self.createImageFromBlob(data);
+        saveAs(data, filename.split('||')[1]);
+        self.createImageFromBlob(data);
       },
       error=>{
         console.error(error);
